@@ -1,0 +1,32 @@
+#include <TFT_eSPI.h> // Hardware-specific library
+
+TFT_eSPI tft = TFT_eSPI();       // Instantiate library
+
+void setup(void) {
+  Serial.begin(115200); // Begin serial communication at 115200 baud rate
+  tft.init();           // Initialize the display
+  tft.setRotation(1);   // Set the display orientation
+}
+
+void loop() {
+  tft.fillScreen(TFT_BLACK);    // Clear the display with black color
+  tft.setTextColor(TFT_WHITE, TFT_BLACK); // Set text color to white with black background
+  
+  // Set text alignment to middle center
+  tft.setTextDatum(MC_DATUM);
+
+  // Display the first line of text
+  tft.drawString("Hello, World!", 160, 80, 4);
+
+  // Display the second line of text
+  tft.drawString("This is a TFT display.", 160, 120, 4);
+
+  // Display the third line of text
+  tft.drawString("Enjoy your day!", 160, 160, 4);
+
+  delay(2000);  // Wait for 2 seconds
+
+  // Change the background to red to indicate a refresh
+  tft.fillScreen(TFT_RED);
+  delay(500);   // Delay briefly before the next refresh
+}
