@@ -46,7 +46,41 @@ const int cableRatings[17][4] = {
   {683, 590, 0, 0}
 };
 
+// //ARRAY FOR SINGLE CORE CABLES
+// int cableRatings2[13][7] = {
+//   // {Cable size, Method C - 2 cables, Method C - 3 cables, Method F - 2 cables, Method F - 3 cables flat, Method F - 3 cables trefoil, Method D - Singles Ducted (A)}
+//   {50, 193, 179, 205, 189, 181, 104},
+//   {70, 245, 225, 259, 238, 231, 133},
+//   {95, 296, 269, 313, 285, 280, 162},
+//   {120, 342, 309, 360, 327, 324, 187},
+//   {150, 393, 352, 413, 373, 373, 212},
+//   {185, 447, 399, 469, 422, 425, 244},
+//   {240, 525, 465, 550, 492, 501, 288},
+//   {300, 594, 515, 624, 547, 567, 327},
+//   {400, 687, 575, 723, 618, 657, 374},  // -1 indicating N/A
+//   {500, 763, 622, 805, 673, 731, 424},  // -1 indicating N/A
+//   {630, 843, 669, 891, 728, 809, -1},  // -1 indicating N/A
+//   {800, 919, 710, 976, 777, 886, -1},  // -1 indicating N/A
+//   {1000, 975, 737, 1041, 808, 945, -1} // -1 indicating N/A
+// };
 
+//ARRAY FOR SINGLE CORE CABLES
+int cableRatings2[13][7] = {
+  // {Cable size, Method C - 2 cables, Method C - 3 cables, Method F - 2 cables, Method F - 3 cables flat, Method F - 3 cables trefoil, Method D - Singles Ducted (A)}
+  {50, 237, 220, 282, 232, 222, 199},
+  {70, 303, 277, 357, 299, 285, 241},
+  {95, 367, 333, 436, 352, 346, 282},
+  {120, 425, 383, 504, 405, 397, 311},
+  {150, 488, 437, 566, 462, 463, 342},
+  {185, 557, 496, 643, 529, 518, 375},
+  {240, 656, 579, 749, 626, 600, 419},
+  {300, 755, 662, 842, 707, 679, 459},
+  {400, 853, 737, 929, 813, 775, 489},  // -1 indicating N/A
+  {500, 962, 791, 1032, 928, 887, 523},  // -1 indicating N/A
+  {630, 1082, 861, 1139, 1049, 1017, 563},  // -1 indicating N/A
+  {800, 1170, 904, 1204, 1141, 1105, 587},  // -1 indicating N/A
+  {1000, 1261, 961, 1289, 1214, 1210, 621} // -1 indicating N/A
+};
 //SETUP FOR THE ON BOARD LED
 int freq = 2000;    // frequency
 int channel = 0;    // aisle
@@ -84,6 +118,8 @@ String Pos_4_5 = "POS_4_5";
 String Pos_4_6 = "POS_4_6";
 String Pos_4_7 = "POS_4_7";
 
+
+
 int paddingValue = 22;
 
 //GLOBAL VARIABLES FOR CHECKING IF THE ROTARY ENCODER HAS STOPPED
@@ -103,7 +139,7 @@ void rotary_onButtonClick()
 
     // Increment the counter and wrap around if it exceeds 7
     buttonPressCount++;
-    if (buttonPressCount > 7) {
+    if (buttonPressCount > 11) {
         buttonPressCount = 1;
     }
     tft.fillScreen(TFT_BLACK);    // Clear the screen with a black background
@@ -172,7 +208,7 @@ void setup(void) {
   //set boundaries and if values should cycle or not
   //in this example we will set possible values between 0 and 1000;
   bool circleValues = false;
-  rotaryEncoder.setBoundaries(0, 10000, circleValues); //minValue, maxValue, circleValues true|false (when max go to min and vice versa)
+  rotaryEncoder.setBoundaries(0, 90000, circleValues); //minValue, maxValue, circleValues true|false (when max go to min and vice versa)
 
   /*Rotary acceleration introduced 25.2.2021.
   * in case range to select is huge, for example - select a value between 0 and 1000 and we want 785
@@ -209,7 +245,15 @@ void loop() {
     } else if (buttonPressCount == 6) {
         display_CABLE_TRAY(); // Run the display Cable Tray program
     } else if (buttonPressCount == 7) {
+        display_CABLE_MULTIPLE_TRAY(); // Run the display Cable Duct program
+    }else if (buttonPressCount == 8) {
         display_CABLE_DUCT(); // Run the display Cable Duct program
+    }else if (buttonPressCount == 9) {
+        display_CABLE_MULTIPLE_DUCT(); // Run the display Cable Duct program
+    }else if (buttonPressCount == 10) {
+        display_CABLE_MULTIPLE_TRAY_SINGLES(); // Run the display Cable Duct program
+    }else if (buttonPressCount == 11) {
+        display_CABLE_MULTIPLE_DUCT_SINGLES(); // Run the display Cable Duct program
     }
 
 
@@ -477,6 +521,16 @@ String findCableSizeForMethodDThreePhase(int current) {
     return findCableSize(current, METHOD_D_THREE_PHASE);
 }
 
+// Function to find the minimum cable size for Method F - 3 cables trefoil
+String findCableSizeForMethodFThreePhaseSinglesTrefoil(int current) {
+    return findCableSize2(current, 5);
+}
+
+// Function to find the minimum cable size for Method D - 3 cables trefoil
+String findCableSizeForMethodDThreePhaseSinglesDucted(int current) {
+    return findCableSize2(current, 6);
+}
+
 // FUNCTION TO FIND THE LAST CURRENT RATING WHICH WAS LARGER AND RETURN THE LAST CABLE SIZE
 String findCableSize(int current, int methodIndex) {
     float lastValidSize = -1;  // Stores the last valid cable size
@@ -497,21 +551,41 @@ String findCableSize(int current, int methodIndex) {
     }
 }
 
+//METHOD USED FOR FINDING CABLE SIZE WHEN THE CABLES ARE DUCTED. 
+String findCableSize2(int current, int methodIndex) {
+    int lastValidSize = -1;  // Stores the last valid cable size
+
+    for (int i = 12; i >= 0; i--) {  // Start from the largest area
+        if (cableRatings2[i][methodIndex] >= current) {
+            lastValidSize = cableRatings2[i][0];  // Update last valid size with the cable size
+        } else if (lastValidSize != -1) {
+            // We've found a smaller rating after finding a valid size
+            return String(lastValidSize);  // Convert int to String before returning
+        }
+    }
+
+    if (lastValidSize == -1) {
+        return "N/A";  // Return "N/A" if no valid size is found
+    } else {
+        return String(lastValidSize);  // Ensure the last valid size is returned as a String
+    }
+}
+
 
 void display_CABLE_TRAY() {
   //FUNCTION FOR GIVING SIZE OF CABLE USING ASSOCIATED GROUPING
   float Pos_1_float = float(Pos_1);
   Pos_2 = padString("Amps", paddingValue);
-  Pos_3 = padString("SPN", paddingValue);
-  Pos_4 = padString("TPN", paddingValue);
-  Pos_3_1 = padString("Ladder / Tray", paddingValue);
+  Pos_3 = padString("     1No", paddingValue);
+  Pos_4 = padString("Multicore", paddingValue);
+  Pos_3_1 = padString("Ladder / Tray - SPN", paddingValue);
   Pos_3_2 = padString("Cg 1: " + findCableSizeForMethodESinglePhase(ceil(Pos_1_float)) + "mm", paddingValue);
   Pos_3_3 = padString("Cg 2: " + findCableSizeForMethodESinglePhase(ceil(Pos_1_float / 0.87)) + "mm", paddingValue);
   Pos_3_4 = padString("Cg 3: " + findCableSizeForMethodESinglePhase(ceil(Pos_1_float / 0.82)) + "mm", paddingValue);
   Pos_3_5 = padString("Cg 4-5: " + findCableSizeForMethodESinglePhase(ceil(Pos_1_float / 0.8)) + "mm", paddingValue);
   Pos_3_6 = padString("Cg 6-7: " + findCableSizeForMethodESinglePhase(ceil(Pos_1_float / 0.79)) + "mm", paddingValue);
   Pos_3_7 = padString("Cg 8-20: " + findCableSizeForMethodESinglePhase(ceil(Pos_1_float / 0.78)) + "mm", paddingValue);
-  Pos_4_1 = padString("Ladder / Tray", paddingValue);
+  Pos_4_1 = padString("Ladder / Tray - TPN", paddingValue);
   Pos_4_2 = padString("Cg 1: " + findCableSizeForMethodEThreePhase(ceil(Pos_1_float)) + "mm", paddingValue);
   Pos_4_3 = padString("Cg 2: " + findCableSizeForMethodEThreePhase(ceil(Pos_1_float / 0.87)) + "mm", paddingValue);
   Pos_4_4 = padString("Cg 3: " + findCableSizeForMethodEThreePhase(ceil(Pos_1_float / 0.82)) + "mm", paddingValue);
@@ -524,16 +598,16 @@ void display_CABLE_DUCT() {
   ////FUNCTION FOR GIVING SIZE OF CABLE USING ASSOCIATED GROUPING
   float Pos_1_float = float(Pos_1);
   Pos_2 = padString("Amps", paddingValue);
-  Pos_3 = padString("SPN", paddingValue);
-  Pos_4 = padString("TPN", paddingValue);
-  Pos_3_1 = padString("Ducted", paddingValue);
+  Pos_3 = padString("     1No", paddingValue);
+  Pos_4 = padString("Multicore", paddingValue);
+  Pos_3_1 = padString("Ducted - SPN", paddingValue);
   Pos_3_2 = padString("Cg 1: " + findCableSizeForMethodDSinglePhase(ceil(Pos_1_float)) + "mm", paddingValue);
   Pos_3_3 = padString("Cg 2: " + findCableSizeForMethodDSinglePhase(ceil(Pos_1_float / 0.87)) + "mm", paddingValue);
   Pos_3_4 = padString("Cg 3: " + findCableSizeForMethodDSinglePhase(ceil(Pos_1_float / 0.82)) + "mm", paddingValue);
   Pos_3_5 = padString("Cg 4-5: " + findCableSizeForMethodDSinglePhase(ceil(Pos_1_float / 0.8)) + "mm", paddingValue);
   Pos_3_6 = padString("Cg 6-7: " + findCableSizeForMethodDSinglePhase(ceil(Pos_1_float / 0.79)) + "mm", paddingValue);
   Pos_3_7 = padString("Cg 8-20: " + findCableSizeForMethodDSinglePhase(ceil(Pos_1_float / 0.78)) + "mm", paddingValue);
-  Pos_4_1 = padString("Ducted", paddingValue);
+  Pos_4_1 = padString("Ducted - TPN", paddingValue);
   Pos_4_2 = padString("Cg 1: " + findCableSizeForMethodDThreePhase(ceil(Pos_1_float)) + "mm", paddingValue);
   Pos_4_3 = padString("Cg 2: " + findCableSizeForMethodDThreePhase(ceil(Pos_1_float / 0.87)) + "mm", paddingValue);
   Pos_4_4 = padString("Cg 3: " + findCableSizeForMethodDThreePhase(ceil(Pos_1_float / 0.82)) + "mm", paddingValue);
@@ -541,3 +615,98 @@ void display_CABLE_DUCT() {
   Pos_4_6 = padString("Cg 6-7: " + findCableSizeForMethodDThreePhase(ceil(Pos_1_float / 0.79)) + "mm", paddingValue);
   Pos_4_7 = padString("Cg 8-20: " + findCableSizeForMethodDThreePhase(ceil(Pos_1_float / 0.78)) + "mm", paddingValue);
 }
+
+
+
+void display_CABLE_MULTIPLE_TRAY() {
+  ////FUNCTION FOR GIVING SIZE OF CABLE USING ASSOCIATED GROUPING
+  float Pos_1_float = float(Pos_1);
+  Pos_2 = padString("Amps", paddingValue);
+  Pos_3 = padString("Parallel", paddingValue);
+  Pos_4 = padString("Multicore", paddingValue);
+  Pos_3_1 = padString("Ladder / tray - TPN", paddingValue);
+  Pos_3_2 = padString("Cg 1 1x: " + findCableSizeForMethodEThreePhase(ceil(Pos_1_float)) + "mm", paddingValue);
+  Pos_3_3 = padString("Cg 8-20 1x: " + findCableSizeForMethodEThreePhase(ceil(Pos_1_float / 0.78)) + "mm", paddingValue);
+  Pos_3_4 = padString("Cg 1 2x: " + findCableSizeForMethodEThreePhase(ceil(Pos_1_float/2)) + "mm", paddingValue);
+  Pos_3_5 = padString("Cg 8-20 2x: " + findCableSizeForMethodEThreePhase(ceil((Pos_1_float/2) / 0.78)) + "mm", paddingValue);
+  Pos_3_6 = padString("Cg 1 3x: " + findCableSizeForMethodEThreePhase(ceil(Pos_1_float/3)) + "mm", paddingValue);
+  Pos_3_7 = padString("Cg 8-20 3x: " + findCableSizeForMethodEThreePhase(ceil((Pos_1_float/3) / 0.78)) + "mm", paddingValue);
+  Pos_4_1 = padString("Ladder / tray - TPN", paddingValue);
+  Pos_4_2 = padString("Cg 1 4x: " + findCableSizeForMethodEThreePhase(ceil(Pos_1_float/4)) + "mm", paddingValue);
+  Pos_4_3 = padString("Cg 8-20 4x: " + findCableSizeForMethodEThreePhase(ceil((Pos_1_float/4) / 0.78)) + "mm", paddingValue);
+  Pos_4_4 = padString("Cg 1 5x: " + findCableSizeForMethodEThreePhase(ceil(Pos_1_float/5)) + "mm", paddingValue);
+  Pos_4_5 = padString("Cg 8-20 5x: " + findCableSizeForMethodEThreePhase(ceil((Pos_1_float/5) / 0.78)) + "mm", paddingValue);
+  Pos_4_6 = padString("Cg 1 6x: " + findCableSizeForMethodEThreePhase(ceil(Pos_1_float/6)) + "mm", paddingValue);
+  Pos_4_7 = padString("Cg 8-20 6x: " + findCableSizeForMethodEThreePhase(ceil((Pos_1_float/6) / 0.78)) + "mm", paddingValue);
+}
+
+
+void display_CABLE_MULTIPLE_DUCT() {
+  ////FUNCTION FOR GIVING SIZE OF CABLE USING ASSOCIATED GROUPING
+  float Pos_1_float = float(Pos_1);
+  Pos_2 = padString("Amps", paddingValue);
+  Pos_3 = padString("Parallel", paddingValue);
+  Pos_4 = padString("Multicore", paddingValue);
+  Pos_3_1 = padString("Ducted - TPN", paddingValue);
+  Pos_3_2 = padString("Cg 1 1x: " + findCableSizeForMethodDThreePhase(ceil(Pos_1_float)) + "mm", paddingValue);
+  Pos_3_3 = padString("Cg 8-20 1x: " + findCableSizeForMethodDThreePhase(ceil(Pos_1_float / 0.78)) + "mm", paddingValue);
+  Pos_3_4 = padString("Cg 1 2x: " + findCableSizeForMethodDThreePhase(ceil(Pos_1_float/2)) + "mm", paddingValue);
+  Pos_3_5 = padString("Cg 8-20 2x: " + findCableSizeForMethodDThreePhase(ceil((Pos_1_float/2) / 0.78)) + "mm", paddingValue);
+  Pos_3_6 = padString("Cg 1 3x: " + findCableSizeForMethodDThreePhase(ceil(Pos_1_float/3)) + "mm", paddingValue);
+  Pos_3_7 = padString("Cg 8-20 3x: " + findCableSizeForMethodDThreePhase(ceil((Pos_1_float/3) / 0.78)) + "mm", paddingValue);
+  Pos_4_1 = padString("Ducted - TPN", paddingValue);
+  Pos_4_2 = padString("Cg 1 4x: " + findCableSizeForMethodDThreePhase(ceil(Pos_1_float/4)) + "mm", paddingValue);
+  Pos_4_3 = padString("Cg 8-20 4x: " + findCableSizeForMethodDThreePhase(ceil((Pos_1_float/4) / 0.78)) + "mm", paddingValue);
+  Pos_4_4 = padString("Cg 1 5x: " + findCableSizeForMethodDThreePhase(ceil(Pos_1_float/5)) + "mm", paddingValue);
+  Pos_4_5 = padString("Cg 8-20 5x: " + findCableSizeForMethodDThreePhase(ceil((Pos_1_float/5) / 0.78)) + "mm", paddingValue);
+  Pos_4_6 = padString("Cg 1 6x: " + findCableSizeForMethodDThreePhase(ceil(Pos_1_float/6)) + "mm", paddingValue);
+  Pos_4_7 = padString("Cg 8-20 6x: " + findCableSizeForMethodDThreePhase(ceil((Pos_1_float/6) / 0.78)) + "mm", paddingValue);
+}
+
+
+void display_CABLE_MULTIPLE_TRAY_SINGLES() {
+  ////FUNCTION FOR GIVING SIZE OF CABLE USING ASSOCIATED GROUPING
+  float Pos_1_float = float(Pos_1);
+  Pos_2 = padString("Amps", paddingValue);
+  Pos_3 = padString("Parallel", paddingValue);
+  Pos_4 = padString("Trefoil", paddingValue);
+  Pos_3_1 = padString("Ladder / tray - TPN", paddingValue);
+  Pos_3_2 = padString("Cg 1 1x: " + findCableSizeForMethodFThreePhaseSinglesTrefoil(ceil(Pos_1_float)) + "mm", paddingValue);
+  Pos_3_3 = padString("Cg 8-20 1x: " + findCableSizeForMethodFThreePhaseSinglesTrefoil(ceil(Pos_1_float / 0.78)) + "mm", paddingValue);
+  Pos_3_4 = padString("Cg 1 2x: " + findCableSizeForMethodFThreePhaseSinglesTrefoil(ceil(Pos_1_float/2)) + "mm", paddingValue);
+  Pos_3_5 = padString("Cg 8-20 2x: " + findCableSizeForMethodFThreePhaseSinglesTrefoil(ceil((Pos_1_float/2) / 0.78)) + "mm", paddingValue);
+  Pos_3_6 = padString("Cg 1 3x: " + findCableSizeForMethodFThreePhaseSinglesTrefoil(ceil(Pos_1_float/3)) + "mm", paddingValue);
+  Pos_3_7 = padString("Cg 8-20 3x: " + findCableSizeForMethodFThreePhaseSinglesTrefoil(ceil((Pos_1_float/3) / 0.78)) + "mm", paddingValue);
+  Pos_4_1 = padString("Ladder / tray - TPN", paddingValue);
+  Pos_4_2 = padString("Cg 1 4x: " + findCableSizeForMethodFThreePhaseSinglesTrefoil(ceil(Pos_1_float/4)) + "mm", paddingValue);
+  Pos_4_3 = padString("Cg 8-20 4x: " + findCableSizeForMethodFThreePhaseSinglesTrefoil(ceil((Pos_1_float/4) / 0.78)) + "mm", paddingValue);
+  Pos_4_4 = padString("Cg 1 5x: " + findCableSizeForMethodFThreePhaseSinglesTrefoil(ceil(Pos_1_float/5)) + "mm", paddingValue);
+  Pos_4_5 = padString("Cg 8-20 5x: " + findCableSizeForMethodFThreePhaseSinglesTrefoil(ceil((Pos_1_float/5) / 0.78)) + "mm", paddingValue);
+  Pos_4_6 = padString("Cg 1 6x: " + findCableSizeForMethodFThreePhaseSinglesTrefoil(ceil(Pos_1_float/6)) + "mm", paddingValue);
+  Pos_4_7 = padString("Cg 8-20 6x: " + findCableSizeForMethodFThreePhaseSinglesTrefoil(ceil((Pos_1_float/6) / 0.78)) + "mm", paddingValue);
+}
+
+
+void display_CABLE_MULTIPLE_DUCT_SINGLES() {
+  ////FUNCTION FOR GIVING SIZE OF CABLE USING ASSOCIATED GROUPING
+  float Pos_1_float = float(Pos_1);
+  Pos_2 = padString("Amps", paddingValue);
+  Pos_3 = padString("Parallel", paddingValue);
+  Pos_4 = padString("Singles", paddingValue);
+  Pos_3_1 = padString("Ducted - TPN", paddingValue);
+  Pos_3_2 = padString("Cg 1 1x: " + findCableSizeForMethodDThreePhaseSinglesDucted(ceil(Pos_1_float)) + "mm", paddingValue);
+  Pos_3_3 = padString("Cg 8-20 1x: " + findCableSizeForMethodDThreePhaseSinglesDucted(ceil(Pos_1_float / 0.78)) + "mm", paddingValue);
+  Pos_3_4 = padString("Cg 1 2x: " + findCableSizeForMethodDThreePhaseSinglesDucted(ceil(Pos_1_float/2)) + "mm", paddingValue);
+  Pos_3_5 = padString("Cg 8-20 2x: " + findCableSizeForMethodDThreePhaseSinglesDucted(ceil((Pos_1_float/2) / 0.78)) + "mm", paddingValue);
+  Pos_3_6 = padString("Cg 1 3x: " + findCableSizeForMethodDThreePhaseSinglesDucted(ceil(Pos_1_float/3)) + "mm", paddingValue);
+  Pos_3_7 = padString("Cg 8-20 3x: " + findCableSizeForMethodDThreePhaseSinglesDucted(ceil((Pos_1_float/3) / 0.78)) + "mm", paddingValue);
+  Pos_4_1 = padString("Ducted - TPN", paddingValue);
+  Pos_4_2 = padString("Cg 1 4x: " + findCableSizeForMethodDThreePhaseSinglesDucted(ceil(Pos_1_float/4)) + "mm", paddingValue);
+  Pos_4_3 = padString("Cg 8-20 4x: " + findCableSizeForMethodDThreePhaseSinglesDucted(ceil((Pos_1_float/4) / 0.78)) + "mm", paddingValue);
+  Pos_4_4 = padString("Cg 1 5x: " + findCableSizeForMethodDThreePhaseSinglesDucted(ceil(Pos_1_float/5)) + "mm", paddingValue);
+  Pos_4_5 = padString("Cg 8-20 5x: " + findCableSizeForMethodDThreePhaseSinglesDucted(ceil((Pos_1_float/5) / 0.78)) + "mm", paddingValue);
+  Pos_4_6 = padString("Cg 1 6x: " + findCableSizeForMethodDThreePhaseSinglesDucted(ceil(Pos_1_float/6)) + "mm", paddingValue);
+  Pos_4_7 = padString("Cg 8-20 6x: " + findCableSizeForMethodDThreePhaseSinglesDucted(ceil((Pos_1_float/6) / 0.78)) + "mm", paddingValue);
+}
+
+
